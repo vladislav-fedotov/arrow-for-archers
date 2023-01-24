@@ -1,6 +1,5 @@
 package ex4
 
-import arrow.optics.Lens
 import arrow.optics.optics
 
 fun main() {
@@ -17,11 +16,11 @@ fun main() {
             )
         )
     )
-    println(employee)
-    println(employee.hashCode())
-
-    println(employeeWithCopy)
-    println(employeeWithCopy.hashCode())
+//    println(employee)
+//    println(employee.hashCode())
+//
+//    println(employeeWithCopy)
+//    println(employeeWithCopy.hashCode())
 
     // region:Lens
 //    val employeeWithLens = companyLens
@@ -35,9 +34,19 @@ fun main() {
     // endregion:Lens
 
     // region:Optics
-    val employeeWithOptic =  Employee.company.address.street.modify(employee) { Street(12,"aa") }
-    println(employeeWithOptic)
-    println(employeeWithOptic.hashCode())
+    val employeeWithNewStreetNumber = Employee.company.address.street.number.modify(employee) { 6 }
+    val employeeWithNewStreet = Employee.company.address.street.set(employee,  Street(12, "Mauerstraße"))
+    println(employeeWithNewStreetNumber)
+    println(employeeWithNewStreet)
+
+    val newEmployee = opticsCompose(employee,
+        { Employee.company.address.street.number.modify(it) { 3 } },
+        { Employee.company.address.street.name.modify(it) { "Arkadiankatu" } },
+        { Employee.company.address.city.modify(it) { "Helsinki" } },
+        { Employee.name.modify(it) { "Tommi" } }
+    )
+
+    println(newEmployee)
     // endregion:Optics
 }
 
@@ -72,8 +81,27 @@ fun main() {
 // endregion:Lens
 
 // region: Optics
-@optics data class Street(val number: Int, val name: String) {companion object}
-@optics data class Address(val city: String, val street: Street) {companion object}
-@optics data class Company(val name: String, val address: Address) {companion object}
-@optics data class Employee(val name: String, val company: Company) {companion object}
+@optics
+data class Street(val number: Int, val name: String) {
+    companion object
+}
+
+@optics
+data class Address(val city: String, val street: Street) {
+    companion object
+}
+
+@optics
+data class Company(val name: String, val address: Address) {
+    companion object
+}
+
+@optics
+data class Employee(val name: String, val company: Company) {
+    companion object
+}
 // endregion: Optics
+
+fun <T> opticsCompose(entity: T, vararg transformations: (T) -> T): T {
+    return transformations.fold(entity, { e, transformation -> transformation(e) })
+}
