@@ -44,12 +44,7 @@ kotlin {
         kotlin.srcDir("build/generated/ksp/test/kotlin")
     }
 }
-//
-//buildscript {
-//    dependencies {
-//        classpath(kotlin("gradle-plugin", version = "1.8.0"))
-//    }
-//}
+
 
 idea {
     module {
